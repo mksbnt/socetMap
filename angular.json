@@ -69,10 +69,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "socetMap:build:production"
+              "buildTarget": "socetMap:build:production"
             },
             "development": {
-              "browserTarget": "socetMap:build:development"
+              "buildTarget": "socetMap:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -80,7 +80,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "socetMap:build"
+            "buildTarget": "socetMap:build"
           }
         },
         "test": {
