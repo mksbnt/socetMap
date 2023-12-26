@@ -1,0 +1,22 @@
+.toolbar {
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+
+    .actions {
+      display: flex;
+      gap: 16px;
+    }
+  }
+
+  .slider {
+    .mat-mdc-slider {
+      width: 300px;
+    }
+  }
+}

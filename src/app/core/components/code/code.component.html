@@ -1,0 +1,26 @@
+<section class="section">
+  <mat-accordion
+    *ngIf="signals$ | async as signals"
+    class="headers-align"
+    multi
+  >
+    <mat-expansion-panel *ngFor="let signal of signals" [expanded]="false">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <span>{{ signal.timestamp | date : "long" }}</span>
+        </mat-panel-title>
+
+        <mat-panel-description>
+          <span class="description">Latitude: {{ signal.point.lat }} </span>
+          <span class="description">Longitude: {{ signal.point.lon }}</span>
+
+          <mat-icon>room</mat-icon>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="body">
+        <pre>{{ signal | json }}</pre>
+      </div>
+    </mat-expansion-panel>
+  </mat-accordion>
+</section>

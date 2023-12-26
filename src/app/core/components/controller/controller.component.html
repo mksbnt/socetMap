@@ -1,0 +1,74 @@
+<mat-toolbar color="secondary" class="toolbar">
+  <div class="controls">
+    <div class="actions">
+      <button
+        mat-mini-fab
+        color="primary"
+        aria-label="Example icon button with a delete icon"
+        (click)="play()"
+      >
+        <mat-icon>play_arrow</mat-icon>
+        <!-- <mat-icon>pause</mat-icon> -->
+      </button>
+
+      <button
+        mat-mini-fab
+        [color]="
+          controllerActionsService.isLiveModeActive ? 'accent' : 'primary'
+        "
+        aria-label="Live"
+        (click)="liveAction()"
+      >
+        <mat-icon>track_changes</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <div class="slider">
+    <mat-slider
+      color="primary"
+      [min]="1"
+      [max]="controllerService.signalsCount"
+      [step]="1"
+      showTickMarks
+      [disabled]="isSliderDisabled"
+    >
+      <input
+        [(ngModel)]="controllerService.sliderValue"
+        (ngModelChange)="controllerService.sliderValueChange($event)"
+        matSliderThumb
+        #slider
+      />
+    </mat-slider>
+  </div>
+
+  <div class="time">
+    <span>{{
+      controllerService.currentTime$ | async | date : "M/d/yy, hh:mm:ss"
+    }}</span>
+  </div>
+
+  <div class="menu">
+    <button
+      mat-icon-button
+      [matMenuTriggerFor]="menu"
+      aria-label="Example icon-button with a menu"
+    >
+      <mat-icon>more_vert</mat-icon>
+    </button>
+    <mat-menu #menu="matMenu">
+      <button mat-menu-item [routerLink]="['code']">
+        <mat-icon>code</mat-icon>
+        <span>Code</span>
+      </button>
+      <button mat-menu-item [routerLink]="['map']">
+        <mat-icon>map</mat-icon>
+        <span>Map</span>
+      </button>
+      <button mat-menu-item [routerLink]="['settings']">
+        <mat-icon>settings</mat-icon>
+        <span>Settings</span>
+      </button>
+    </mat-menu>
+  </div>
+</mat-toolbar>
