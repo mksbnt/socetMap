@@ -1,28 +1,5 @@
 <mat-toolbar color="secondary" class="toolbar">
-  <div class="controls">
-    <div class="actions">
-      <button
-        mat-mini-fab
-        color="primary"
-        aria-label="Example icon button with a delete icon"
-        (click)="play()"
-      >
-        <mat-icon>play_arrow</mat-icon>
-        <!-- <mat-icon>pause</mat-icon> -->
-      </button>
-
-      <button
-        mat-mini-fab
-        [color]="
-          controllerActionsService.isLiveModeActive ? 'accent' : 'primary'
-        "
-        aria-label="Live"
-        (click)="liveAction()"
-      >
-        <mat-icon>track_changes</mat-icon>
-      </button>
-    </div>
-  </div>
+  <app-actions></app-actions>
 
   <div class="slider">
     <mat-slider
@@ -42,11 +19,7 @@
     </mat-slider>
   </div>
 
-  <div class="time">
-    <span>{{
-      controllerService.currentTime$ | async | date : "M/d/yy, hh:mm:ss"
-    }}</span>
-  </div>
+  <app-time></app-time>
 
   <div class="menu">
     <button

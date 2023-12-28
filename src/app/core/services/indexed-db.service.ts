@@ -10,6 +10,7 @@ export class IndexedDbService {
   private dbService: NgxIndexedDBService = inject(NgxIndexedDBService);
   private signalAddedSource = new Subject<ISignal[]>();
   signalAdded$ = this.signalAddedSource.asObservable();
+  signals$: Observable<ISignal[]> = this.dbService.getAll<ISignal>('signals');
 
   emitSignalAdded(signal: ISignal[]) {
     this.signalAddedSource.next(signal);
@@ -17,7 +18,7 @@ export class IndexedDbService {
 
   write(data: ISignal[]) {
     this.dbService.bulkAdd('signals', data).subscribe((key) => {
-      console.log(key, data);
+      // todo: can use groupSignalsByTimestamp() here & write prepared data
       this.emitSignalAdded(data);
     });
   }
@@ -25,6 +26,4 @@ export class IndexedDbService {
   getCount(): Observable<number> {
     return this.dbService.count('signals');
   }
-
-  signals$: Observable<ISignal[]> = this.dbService.getAll<ISignal>('signals');
 }

@@ -8,19 +8,16 @@ import { ISignal } from '../interfaces/signal.interface';
 export class WebSocetService {
   private subject!: WebSocketSubject<ISignal[]>;
 
-  constructor() {}
-
   connect() {
     if (!this.subject) {
-      this.subject = new WebSocketSubject('ws://localhost:3000'); // Replace with your server URL
+      this.subject = new WebSocketSubject('ws://localhost:3000');
     }
     return this.subject;
   }
 
   disconnect() {
     if (this.subject) {
-      this.subject.complete(); // Complete the subject to close the WebSocket connection
-      // this.subject = null; // Reset the subject
+      this.subject.complete();
     }
   }
 }

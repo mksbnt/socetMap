@@ -8,7 +8,7 @@ import { RouterModule } from '@angular/router';
   template: `
     <button [routerLink]="['/home']" mat-fab extended color="primary">
       <mat-icon>key</mat-icon>
-      Login
+      <span>Login</span>
     </button>
   `,
   styleUrls: ['./login.component.scss'],

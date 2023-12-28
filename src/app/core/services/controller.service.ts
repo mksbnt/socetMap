@@ -43,6 +43,20 @@ export class ControllerService {
     this._groupedSignals = value;
   }
 
+  private _playModeTime: string = '';
+  public get playModeTime(): string {
+    return this._playModeTime;
+  }
+  public set playModeTime(value: string) {
+    this._playModeTime = value;
+  }
+
+  setCurrentTime(currentTimeMillis: number) {
+    if (currentTimeMillis !== this._currentTime$.value) {
+      this._currentTime$.next(currentTimeMillis);
+    }
+  }
+
   sliderValueChange(newValue: number) {
     this._currentTime$.next(
       this.getLatestTimestampKey(this.groupedSignals, newValue)
@@ -74,7 +88,7 @@ export class ControllerService {
     }, {});
   }
 
-  getSignalsByTimestamp(
+  getSignalsByTimestamp( // todo: memoization
     groupedSignals: IGroupedSignals,
     timestamp: number
   ): ISignal[] {

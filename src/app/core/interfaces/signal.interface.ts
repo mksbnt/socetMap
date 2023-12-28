@@ -1,4 +1,4 @@
-interface IPoint {
+export interface IPoint {
   lat: number;
   lon: number;
 }
