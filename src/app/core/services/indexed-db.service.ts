@@ -56,7 +56,7 @@ export class IndexedDbService {
   write(key: DB_KEYS, data: ISignal[]) {
     // todo: can use groupSignalsByTimestamp() here & write prepared data
     this.dbService
-      .bulkAdd(DB_KEYS.SIGNALS, data)
+      .bulkAdd(key, data)
       .subscribe(() => this.emitSignalAdded(data));
   }
 }
