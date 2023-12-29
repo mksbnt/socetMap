@@ -4,10 +4,11 @@ export interface IPoint {
 }
 
 export interface ISignal {
+  id?: number;
   timestamp: number;
   frequency: number;
   point: IPoint;
-  zone: [] | IPoint[];
+  zone: IPoint[] | [];
 }
 
 export interface IGroupedSignals {

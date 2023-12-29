@@ -6,6 +6,7 @@ import { IndexedDbService } from '../../services/indexed-db.service';
 import { ControllerService } from '../../services/controller.service';
 import { MatButton, MatButtonModule } from '@angular/material/button';
 import { ISignal } from '../../interfaces/signal.interface';
+import { DB_KEYS } from '../../enums/db-keys.enum';
 
 @Component({
   selector: 'app-actions',
@@ -105,7 +106,7 @@ export class ActionsComponent {
     if (!this.controllerActionsService.isLiveModeActive) {
       this.controllerActionsService.toggleLiveMode();
       this.websocketService.connect().subscribe((signals) => {
-        this.writeData(signals);
+        this.writeData(DB_KEYS.SIGNALS, signals);
 
         this.controllerService.signals.length === 0
           ? (this.controllerService.signals = signals)
@@ -119,8 +120,8 @@ export class ActionsComponent {
     }
   }
 
-  writeData(data: ISignal | ISignal[]): void {
+  writeData(key: DB_KEYS, data: ISignal | ISignal[]): void {
     const array: ISignal[] = Array.isArray(data) ? data : [data];
-    this.dbService.write(array);
+    this.dbService.write(key, array);
   }
 }
