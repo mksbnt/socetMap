@@ -2,24 +2,5 @@
   <app-actions></app-actions>
   <app-slider></app-slider>
   <app-time></app-time>
-
-
-  <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Menu">
-    <mat-icon>more_vert</mat-icon>
-  </button>
-  <mat-menu #menu="matMenu">
-    <button mat-menu-item [routerLink]="['code']">
-      <mat-icon>code</mat-icon>
-      <span>Code</span>
-    </button>
-    <button mat-menu-item [routerLink]="['map']">
-      <mat-icon>map</mat-icon>
-      <span>Map</span>
-    </button>
-    <button mat-menu-item [routerLink]="['settings']">
-      <mat-icon>settings</mat-icon>
-      <span>Settings</span>
-    </button>
-  </mat-menu>
-
+  <app-menu></app-menu>
 </mat-toolbar>

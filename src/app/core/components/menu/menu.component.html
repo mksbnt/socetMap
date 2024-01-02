@@ -1,0 +1,17 @@
+<button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Menu">
+  <mat-icon>more_vert</mat-icon>
+</button>
+<mat-menu #menu="matMenu">
+  <button mat-menu-item [routerLink]="[ROUTES.CODE]">
+    <mat-icon>code</mat-icon>
+    <span>Code</span>
+  </button>
+  <button mat-menu-item [routerLink]="[ROUTES.MAP]">
+    <mat-icon>map</mat-icon>
+    <span>Map</span>
+  </button>
+  <button mat-menu-item [routerLink]="[ROUTES.SETTINGS]">
+    <mat-icon>settings</mat-icon>
+    <span>Settings</span>
+  </button>
+</mat-menu>

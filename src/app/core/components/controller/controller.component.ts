@@ -1,30 +1,22 @@
 import { Component } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { MatMenuModule } from '@angular/material/menu';
 import { ActionsComponent } from '../actions/actions.component';
 import { TimeComponent } from '../time/time.component';
 import { SliderComponent } from '../slider/slider.component';
+import { MenuComponent } from '../menu/menu.component';
 
 @Component({
   selector: 'app-controller',
   templateUrl: './controller.component.html',
   styleUrls: ['./controller.component.scss'],
   imports: [
-    MatToolbarModule,
-    MatIconModule,
-    MatButtonModule,
-    MatButtonToggleModule,
-    RouterModule,
     CommonModule,
-    MatMenuModule,
+    MatToolbarModule,
     ActionsComponent,
     TimeComponent,
     SliderComponent,
+    MenuComponent,
   ],
   standalone: true,
 })
