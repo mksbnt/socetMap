@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { INewGroupedSignal, ISignal } from '../interfaces/signal.interface';
 import { NgxIndexedDBService } from 'ngx-indexed-db';
-import { tap } from 'rxjs';
+import { lastValueFrom, tap } from 'rxjs';
 import { DB_KEYS } from '../enums/db-keys.enum';
 import { SignalsService } from './signals.service';
 import {
@@ -40,6 +40,10 @@ export class IndexedDbService {
         tap(() => this.deleteOldSignals(DB_KEYS.GROUPED_SIGNALS, timestamp))
       )
       .subscribe();
+  }
+
+  async getAllRecords(key: DB_KEYS): Promise<INewGroupedSignal[]> {
+    return lastValueFrom(this.dbService.getAll(key));
   }
 
   private deleteOldSignals(key: DB_KEYS, currentTimestamp: number): void {

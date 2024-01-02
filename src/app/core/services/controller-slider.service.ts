@@ -55,8 +55,13 @@ export class ControllerSliderService {
   }
 
   sliderValueChange(newValue: number) {
-    this.sliderTimestamp = newValue;
-    this.sliderTimestamp$.next(this.sliderTimestamp);
+    this.setSliderValue(newValue);
+  }
+
+  setSliderValue(timeStamp: number): void {
+    this.sliderValue = timeStamp;
+    this.sliderTimestamp = timeStamp;
+    this.sliderTimestamp$.next(timeStamp);
   }
 
   maxSliderValue: number = currentTimestampMilliseconds();

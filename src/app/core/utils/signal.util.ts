@@ -4,7 +4,9 @@ import {
   ISignal,
 } from '../interfaces/signal.interface';
 import {
+  currentTimestampMilliseconds,
   millisecondsToSeconds,
+  secondsToMilliseconds,
   subtractTwelveHoursMilliseconds,
 } from './time.util';
 
@@ -44,4 +46,12 @@ export const groupSignalsByTimestamp = (
     grouped[timestamp].push(obj);
     return grouped;
   }, {});
+};
+
+export const getLastSignalTimestamp: (
+  signals: INewGroupedSignal[]
+) => number = (signals) => {
+  return signals.at(-1)?.timestamp
+    ? secondsToMilliseconds(signals.at(-1)!.timestamp)
+    : currentTimestampMilliseconds();
 };
