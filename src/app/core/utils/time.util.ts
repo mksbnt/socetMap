@@ -5,3 +5,7 @@ export const millisecondsToSeconds = (millis: number): number => {
 
 export const subtractTwelveHoursMilliseconds = (input: number): number =>
   input - 12 * 60 * 60 * 1000;
+
+export const currentTimestampMilliseconds = (
+  currentTimestamp: Date = new Date()
+): number => currentTimestamp.getTime();

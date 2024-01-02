@@ -16,7 +16,10 @@ import { Subject, takeUntil } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ControllerSliderService } from '../../services/controller-slider.service';
-import { subtractTwelveHoursMilliseconds } from '../../utils/time.util';
+import {
+  currentTimestampMilliseconds,
+  subtractTwelveHoursMilliseconds,
+} from '../../utils/time.util';
 import { MODE } from '../../enums/mode.enum';
 
 @Component({
@@ -106,7 +109,7 @@ export class ActionsComponent {
   workerPostMessage = (mode: MODE): number => {
     return mode === MODE.PLAY
       ? this.sliderService.sliderValue
-      : new Date().getTime();
+      : currentTimestampMilliseconds();
   };
 
   liveAction(): void {

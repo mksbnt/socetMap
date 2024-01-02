@@ -1,25 +1,23 @@
 import { Injectable, inject } from '@angular/core';
-import { TimeService } from './time.service';
 import { BehaviorSubject } from 'rxjs';
-
 import { IndexedDbService } from './indexed-db.service';
 import { DB_KEYS } from '../enums/db-keys.enum';
 import { ControllerActionsService } from './controller-actions.service';
-import { subtractTwelveHoursMilliseconds } from '../utils/time.util';
+import {
+  currentTimestampMilliseconds,
+  subtractTwelveHoursMilliseconds,
+} from '../utils/time.util';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ControllerSliderService {
-  
   private dbService = inject(IndexedDbService);
-  private timeService: TimeService = inject(TimeService);
   private actionsService: ControllerActionsService = inject(
     ControllerActionsService
   );
-
   private _sliderValue: number = this.modifyTimestamp(
-    this.currentTimestampMilliseconds()
+    currentTimestampMilliseconds()
   );
   public get sliderValue() {
     return this._sliderValue;
@@ -27,19 +25,15 @@ export class ControllerSliderService {
   public set sliderValue(value) {
     this._sliderValue = value;
   }
-
-  modifyTimestamp(timestamp: number): number {
-    return Math.abs(timestamp - 12 * 60 * 60 * 1000);
-  }
-
-  sliderValueChange(newValue: number) {
-    this.sliderTimestamp = newValue;
-    this.sliderTimestamp$.next(this.sliderTimestamp);
-  }
-
-  sliderTimestamp$: BehaviorSubject<number> = new BehaviorSubject<number>(
-    this.modifyTimestamp(this.currentTimestampMilliseconds())
+  private _sliderTimestamp: number = this.modifyTimestamp(
+    currentTimestampMilliseconds()
   );
+  public get sliderTimestamp() {
+    return this._sliderTimestamp;
+  }
+  public set sliderTimestamp(value) {
+    this._sliderTimestamp = value;
+  }
 
   constructor() {
     this.sliderTimestamp$.subscribe((timestamp) => {
@@ -52,24 +46,22 @@ export class ControllerSliderService {
     });
   }
 
-  private _sliderTimestamp: number = this.modifyTimestamp(
-    this.currentTimestampMilliseconds()
+  sliderTimestamp$: BehaviorSubject<number> = new BehaviorSubject<number>(
+    this.modifyTimestamp(currentTimestampMilliseconds())
   );
 
-  public get sliderTimestamp() {
-    return this._sliderTimestamp;
-  }
-  public set sliderTimestamp(value) {
-    this._sliderTimestamp = value;
+  modifyTimestamp(timestamp: number): number {
+    return Math.abs(timestamp - 12 * 60 * 60 * 1000);
   }
 
-  currentTimestampMilliseconds(): number {
-    return this.timeService.currentTimestampMilliseconds;
+  sliderValueChange(newValue: number) {
+    this.sliderTimestamp = newValue;
+    this.sliderTimestamp$.next(this.sliderTimestamp);
   }
 
-  maxSliderValue: number = this.timeService.currentTimestampMilliseconds;
+  maxSliderValue: number = currentTimestampMilliseconds();
   minSliderValue: number = subtractTwelveHoursMilliseconds(
-    this.timeService.currentTimestampMilliseconds
+    currentTimestampMilliseconds()
   );
 
   maxSliderValue$: BehaviorSubject<number> = new BehaviorSubject<number>(
