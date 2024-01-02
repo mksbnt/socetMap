@@ -1,23 +1,16 @@
 <div class="wrapper">
-  <button #playButton
-    mat-mini-fab
-    [ariaLabel]="controllerActionsService.isPlayModeActive ? 'Pause' : 'Play'"
+  <button #playButton mat-mini-fab [ariaLabel]="controllerActionsService.isPlayModeActive ? 'Pause' : 'Play'"
     [color]="controllerActionsService.isPlayModeActive ? 'accent' : 'primary'"
-    [disabled]="controllerActionsService.isLiveModeActive"
-    (click)="playAction()"
-  >
+    [disabled]="controllerActionsService.isLiveModeActive" (click)="playAction()">
     <mat-icon>
       @if ( controllerActionsService.isPlayModeActive) { pause } @else { play_arrow }
     </mat-icon>
   </button>
 
-  <button #liveButton
-    mat-mini-fab
-    aria-label="Live"
+  <button #liveButton mat-mini-fab aria-label="Live"
     [color]="controllerActionsService.isLiveModeActive ? 'accent' : 'primary'"
-    [disabled]="controllerActionsService.isPlayModeActive"
-    (click)="liveAction()"
-  >
+    [disabled]="controllerActionsService.isPlayModeActive || !( websocketService.connectionStatus$ | async)"
+    (click)="liveAction()">
     <mat-icon>track_changes</mat-icon>
   </button>
 </div>

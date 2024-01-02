@@ -4,7 +4,6 @@ import {
   HostListener,
   ViewChild,
   DestroyRef,
-  AfterViewInit,
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { ControllerActionsService } from '../../services/controller-actions.service';
@@ -17,13 +16,8 @@ import { Subject, takeUntil } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ControllerSliderService } from '../../services/controller-slider.service';
-
 import { subtractTwelveHoursMilliseconds } from '../../utils/time.util';
-
-enum MODE {
-  PLAY = 'play',
-  LIVE = 'live',
-}
+import { MODE } from '../../enums/mode.enum';
 
 @Component({
   selector: 'app-actions',
@@ -32,7 +26,7 @@ enum MODE {
   templateUrl: './actions.component.html',
   styleUrl: './actions.component.scss',
 })
-export class ActionsComponent implements AfterViewInit {
+export class ActionsComponent {
   @ViewChild('liveButton') liveButton!: MatButton;
   @ViewChild('playButton') playButton!: MatButton;
   @HostListener('window:keydown', ['$event'])
@@ -49,7 +43,7 @@ export class ActionsComponent implements AfterViewInit {
   public controllerActionsService: ControllerActionsService = inject(
     ControllerActionsService
   );
-  private websocketService: WebSocketService = inject(WebSocketService);
+  websocketService: WebSocketService = inject(WebSocketService);
   private dbService: IndexedDbService = inject(IndexedDbService);
   private worker: Worker = new Worker(
     new URL('./actions.worker', import.meta.url)
@@ -59,15 +53,6 @@ export class ActionsComponent implements AfterViewInit {
   private sliderService: ControllerSliderService = inject(
     ControllerSliderService
   );
-
-  ngAfterViewInit(): void {
-    // Error: NG0100: ExpressionChangedAfterItHasBeenCheckedError
-    // this.websocketService.connectionStatus$
-    //   .pipe(takeUntilDestroyed(this.destroyRef), distinctUntilChanged())
-    //   .subscribe({
-    //     next: (value) => (this.liveButton.disabled = !value),
-    //   });
-  }
 
   playAction(): void {
     if (this.playButton.disabled) {
@@ -122,17 +107,6 @@ export class ActionsComponent implements AfterViewInit {
     return mode === MODE.PLAY
       ? this.sliderService.sliderValue
       : new Date().getTime();
-  };
-
-  setNextKey = (currentValue: string, array: string[]): string => {
-    const index = array.indexOf(currentValue);
-
-    if (index === -1) {
-      this.terminateWorker();
-      return currentValue;
-    }
-
-    return array[index + 1];
   };
 
   liveAction(): void {
