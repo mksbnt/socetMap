@@ -3,23 +3,23 @@
   <app-slider></app-slider>
   <app-time></app-time>
 
-  <div class="menu">
-    <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Example icon-button with a menu">
-      <mat-icon>more_vert</mat-icon>
+
+  <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Menu">
+    <mat-icon>more_vert</mat-icon>
+  </button>
+  <mat-menu #menu="matMenu">
+    <button mat-menu-item [routerLink]="['code']">
+      <mat-icon>code</mat-icon>
+      <span>Code</span>
     </button>
-    <mat-menu #menu="matMenu">
-      <button mat-menu-item [routerLink]="['code']">
-        <mat-icon>code</mat-icon>
-        <span>Code</span>
-      </button>
-      <button mat-menu-item [routerLink]="['map']">
-        <mat-icon>map</mat-icon>
-        <span>Map</span>
-      </button>
-      <button mat-menu-item [routerLink]="['settings']">
-        <mat-icon>settings</mat-icon>
-        <span>Settings</span>
-      </button>
-    </mat-menu>
-  </div>
+    <button mat-menu-item [routerLink]="['map']">
+      <mat-icon>map</mat-icon>
+      <span>Map</span>
+    </button>
+    <button mat-menu-item [routerLink]="['settings']">
+      <mat-icon>settings</mat-icon>
+      <span>Settings</span>
+    </button>
+  </mat-menu>
+
 </mat-toolbar>

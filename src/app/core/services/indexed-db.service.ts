@@ -46,6 +46,13 @@ export class IndexedDbService {
     return lastValueFrom(this.dbService.getAll(key));
   }
 
+  async getRecordsCount(key: DB_KEYS): Promise<number> {
+    const count = await new Promise<number>((resolve) => {
+      this.dbService.count(key).subscribe(resolve);
+    });
+    return count;
+  }
+
   private deleteOldSignals(key: DB_KEYS, currentTimestamp: number): void {
     this.dbService
       .getAll<INewGroupedSignal>(DB_KEYS.GROUPED_SIGNALS)

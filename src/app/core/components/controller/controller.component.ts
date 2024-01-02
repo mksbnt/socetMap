@@ -28,15 +28,4 @@ import { SliderComponent } from '../slider/slider.component';
   ],
   standalone: true,
 })
-export default class ControllerComponent {
-  get isSliderDisabled(): boolean {
-    return false;
-    // todo: disable slider
-    // return this.controllerActionsService.isLiveModeActive ||
-    //   this.controllerActionsService.isPlayModeActive
-    //   ? true
-    //   : this.signalsCount
-    //   ? false
-    //   : true;
-  }
-}
+export default class ControllerComponent {}
