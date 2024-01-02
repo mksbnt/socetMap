@@ -34,3 +34,14 @@ export const extractTimestampAndSignals = (
   }));
   return [timeStamp, signals];
 };
+
+export const groupSignalsByTimestamp = (
+  signals: ISignal[]
+): IGroupedSignals => {
+  return signals.reduce<IGroupedSignals>((grouped, obj) => {
+    const timestamp = obj.timestamp;
+    grouped[timestamp] = grouped[timestamp] || [];
+    grouped[timestamp].push(obj);
+    return grouped;
+  }, {});
+};

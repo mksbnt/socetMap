@@ -43,7 +43,6 @@ export class ControllerSliderService {
 
   constructor() {
     this.sliderTimestamp$.subscribe((timestamp) => {
-      this.controllerService.setCurrentTime(Math.floor(timestamp / 1000));
       if (!this.actionsService.isLiveModeActive) {
         this.dbService.get(
           DB_KEYS.GROUPED_SIGNALS,
