@@ -16,6 +16,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatNativeDateModule } from '@angular/material/core';
 import { ControllerService } from '../../services/controller.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ControllerSliderService } from '../../services/controller-slider.service';
+import { IndexedDbService } from '../../services/indexed-db.service';
+import { DB_KEYS } from '../../enums/db-keys.enum';
+import { SignalsService } from '../../services/signals.service';
 
 @Component({
   selector: 'app-code',
@@ -32,22 +36,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     MatNativeDateModule,
   ],
 })
-export default class CodeComponent implements OnInit {
+export default class CodeComponent {
   @ViewChild(MatAccordion) accordion!: MatAccordion;
-  private destroyRef = inject(DestroyRef);
   public controllerService: ControllerService = inject(ControllerService);
-  signals$: BehaviorSubject<ISignal[]> = new BehaviorSubject<ISignal[]>([]);
-
-  ngOnInit(): void {
-    this.controllerService.currentTime$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((currentTime) => {
-        this.signals$.next(
-          this.controllerService.getSignalsByTimestamp(
-            this.controllerService.groupedSignals,
-            currentTime
-          )
-        );
-      });
-  }
+  public signalsService: SignalsService = inject(SignalsService);
 }

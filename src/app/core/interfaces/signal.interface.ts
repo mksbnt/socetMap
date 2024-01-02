@@ -14,3 +14,10 @@ export interface ISignal {
 export interface IGroupedSignals {
   [timestamp: number]: ISignal[];
 }
+
+export interface INewGroupedSignal {
+  id?: number;
+  timestamp: number;
+  frequency: number;
+  signals: ISignal[];
+}

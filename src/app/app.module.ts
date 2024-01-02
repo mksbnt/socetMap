@@ -6,16 +6,18 @@ import { ServiceWorkerModule } from '@angular/service-worker';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DBConfig, NgxIndexedDBModule } from 'ngx-indexed-db';
 import { LeafletModule } from '@asymmetrik/ngx-leaflet';
+import { DB_KEYS } from './core/enums/db-keys.enum';
 
 const dbConfig: DBConfig = {
-  name: 'Signals',
-  version: 2,
+  name: DB_KEYS.GROUPED_SIGNALS,
+  version: 4,
   objectStoresMeta: [
     {
-      store: 'signals',
+      store: DB_KEYS.GROUPED_SIGNALS,
       storeConfig: { keyPath: 'id', autoIncrement: true },
       storeSchema: [
-        { name: 'name', keypath: 'name', options: { unique: true } },
+        { name: 'timestamp', keypath: 'timestamp', options: { unique: false } },
+        { name: 'signals', keypath: 'signals', options: { unique: false } },
       ],
     },
   ],

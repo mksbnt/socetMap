@@ -1,9 +1,3 @@
 <time>
-  @if(controllerActionsService.isLiveModeActive ){
-  {{ currentTime | date : "M/d/yy, hh:mm:ss" }}
-  } @else if (controllerActionsService.isPlayModeActive) {
-  {{ controllerService.playModeTime ? (controllerService.playModeTime | date : "M/d/yy, hh:mm:ss")  : (controllerService.currentTime$ | async | date : "M/d/yy, hh:mm:ss")}}
-  } @else {
-  {{ controllerService.currentTime$ | async | date : "M/d/yy, hh:mm:ss" }}
-  }
+  {{ sliderService.sliderTimestamp$ | async | date : "M/d/yy, H:mm:ss" }}
 </time>

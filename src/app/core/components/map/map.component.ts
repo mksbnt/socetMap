@@ -5,9 +5,8 @@ import {
   inject,
 } from '@angular/core';
 import { LeafletModule } from '@asymmetrik/ngx-leaflet';
-import { LatLngTuple, Marker, layerGroup, polygon, tileLayer } from 'leaflet';
+import { LatLngTuple, Marker, layerGroup, polygon } from 'leaflet';
 import { MatIconModule } from '@angular/material/icon';
-import { ControllerService } from '../../services/controller.service';
 import { Subject } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { leafletOptions, pointIcon, polygonOptions } from './map.constants';
@@ -18,6 +17,7 @@ import {
   findCenter,
   sortZones,
 } from './map.methods';
+import { SignalsService } from '../../services/signals.service';
 @Component({
   selector: 'app-map',
   styleUrls: ['./map.component.scss'],
@@ -35,8 +35,8 @@ import {
 })
 export default class MapComponent {
   private destroyRef = inject(DestroyRef);
-  private controllerService: ControllerService = inject(ControllerService);
-  leafletOptions = leafletOptions;
+  public signalsService: SignalsService = inject(SignalsService);
+  public leafletOptions = leafletOptions;
 
   onMapReady(map: L.Map) {
     const pointsLayer = layerGroup().addTo(map);
@@ -115,19 +115,20 @@ export default class MapComponent {
         });
       });
 
-    this.controllerService.currentTime$
+    this.signalsService.signals$
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((currentTime) => {
-        const signals = this.controllerService.getSignalsByTimestamp(
-          this.controllerService.groupedSignals,
-          currentTime
-        );
-        const points = extractPoints(signals);
-        const zones = sortZones(extractZones(signals));
+      .subscribe((signals) => {
+        if (signals.length) {
+          const points = extractPoints(signals);
+          const zones = sortZones(extractZones(signals));
 
-        pointsSubject$.next(points);
-        zonesSubject$.next(zones);
-        map.setView(findCenter(points), 13);
+          pointsSubject$.next(points);
+          zonesSubject$.next(zones);
+          map.setView(findCenter(points), 13);
+        } else {
+          pointsSubject$.next([]);
+          zonesSubject$.next([]);
+        }
       });
   }
 }

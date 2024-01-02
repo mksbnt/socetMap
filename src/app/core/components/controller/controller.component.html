@@ -1,32 +1,10 @@
 <mat-toolbar color="secondary" class="toolbar">
   <app-actions></app-actions>
-
-  <div class="slider">
-    <mat-slider
-      color="primary"
-      [min]="1"
-      [max]="controllerService.signalsCount"
-      [step]="1"
-      showTickMarks
-      [disabled]="isSliderDisabled"
-    >
-      <input
-        [(ngModel)]="controllerService.sliderValue"
-        (ngModelChange)="controllerService.sliderValueChange($event)"
-        matSliderThumb
-        #slider
-      />
-    </mat-slider>
-  </div>
-
+  <app-slider></app-slider>
   <app-time></app-time>
 
   <div class="menu">
-    <button
-      mat-icon-button
-      [matMenuTriggerFor]="menu"
-      aria-label="Example icon-button with a menu"
-    >
+    <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Example icon-button with a menu">
       <mat-icon>more_vert</mat-icon>
     </button>
     <mat-menu #menu="matMenu">

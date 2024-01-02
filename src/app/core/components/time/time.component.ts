@@ -1,7 +1,6 @@
-import { Component, NgZone, inject } from '@angular/core';
-import { ControllerService } from '../../services/controller.service';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ControllerActionsService } from '../../services/controller-actions.service';
+import { ControllerSliderService } from '../../services/controller-slider.service';
 
 @Component({
   selector: 'app-time',
@@ -11,35 +10,7 @@ import { ControllerActionsService } from '../../services/controller-actions.serv
   styleUrl: './time.component.scss',
 })
 export class TimeComponent {
-  public controllerService: ControllerService = inject(ControllerService);
-  public controllerActionsService: ControllerActionsService = inject(
-    ControllerActionsService
+  public sliderService: ControllerSliderService = inject(
+    ControllerSliderService
   );
-
-  private worker: Worker = new Worker(
-    new URL('./time.worker', import.meta.url)
-  );
-  currentTime: Date = new Date();
-
-  ngOnInit(): void {
-    this.runWorker();
-  }
-  ngOnDestroy(): void {
-    this.terminateWorker();
-  }
-
-  runWorker(): void {
-    if (typeof Worker !== 'undefined') {
-      this.worker.onmessage = ({ data }) => {
-        this.currentTime = data;
-      };
-      this.worker.postMessage('hello');
-    } else {
-      console.log('Web workers are not supported in this environment');
-    }
-  }
-
-  terminateWorker(): void {
-    this.worker.terminate();
-  }
 }

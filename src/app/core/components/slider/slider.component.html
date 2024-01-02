@@ -1,0 +1,5 @@
+<mat-slider [min]="sliderService.minSliderValue$ | async" [max]="sliderService.maxSliderValue$ | async"
+  [step]="SLIDER_STEP">
+  <input matSliderThumb [(ngModel)]="sliderService.sliderValue"
+    (ngModelChange)="sliderService.sliderValueChange($event)" />
+</mat-slider>

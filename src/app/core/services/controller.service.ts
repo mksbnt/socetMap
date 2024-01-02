@@ -1,75 +1,26 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { IGroupedSignals, ISignal } from '../interfaces/signal.interface';
 import { BehaviorSubject, filter } from 'rxjs';
+import { TimeService } from './time.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ControllerService {
-  private _currentTime$ = new BehaviorSubject<number>(0);
+  private timeService: TimeService = inject(TimeService);
+
+  private _currentTime$ = new BehaviorSubject<number>(
+    this.timeService.currentTimestampMilliseconds
+  );
+
   currentTime$ = this._currentTime$
     .asObservable()
     .pipe(filter((value) => value !== 0));
-
-  private _sliderValue = 0;
-  public get sliderValue() {
-    return this._sliderValue;
-  }
-  public set sliderValue(value) {
-    this._sliderValue = value;
-  }
-  private _signals: ISignal[] = [];
-  get signals(): ISignal[] {
-    return this._signals;
-  }
-  set signals(signals: ISignal[]) {
-    this._signals = signals;
-  }
-  set spreadSignals(signals: ISignal[]) {
-    this._signals = [...this.signals, ...signals];
-  }
-  private _signalsCount = 0;
-  get signalsCount(): number {
-    return this._signalsCount;
-  }
-  set signalsCount(value: number) {
-    this._signalsCount = value;
-  }
-  private _groupedSignals: IGroupedSignals = {};
-  public get groupedSignals(): IGroupedSignals {
-    return this._groupedSignals;
-  }
-  public set groupedSignals(value: IGroupedSignals) {
-    this._groupedSignals = value;
-  }
-
-  private _playModeTime: string = '';
-  public get playModeTime(): string {
-    return this._playModeTime;
-  }
-  public set playModeTime(value: string) {
-    this._playModeTime = value;
-  }
 
   setCurrentTime(currentTimeMillis: number) {
     if (currentTimeMillis !== this._currentTime$.value) {
       this._currentTime$.next(currentTimeMillis);
     }
-  }
-
-  sliderValueChange(newValue: number) {
-    this._currentTime$.next(
-      this.getLatestTimestampKey(this.groupedSignals, newValue)
-    );
-  }
-
-  updateSignals(): void {
-    this.groupedSignals = this.groupSignalsByTimestamp(this.signals);
-    this.signalsCount = Object.keys(this.groupedSignals).length;
-    this.sliderValue = this.signalsCount;
-    this._currentTime$.next(
-      this.getLatestTimestampKey(this.groupedSignals, this.signalsCount - 1)
-    );
   }
 
   getLatestTimestampKey(
@@ -88,7 +39,19 @@ export class ControllerService {
     }, {});
   }
 
-  getSignalsByTimestamp( // todo: memoization
+  transformSignals(signals: ISignal[]): any {
+    return signals.map((signal) => ({
+      timestamp: signal.timestamp,
+      frequency: signal.frequency,
+      signals: {
+        point: signal.point,
+        zone: signal.zone,
+      },
+    }));
+  }
+
+  getSignalsByTimestamp(
+    // todo: memoizationsliderValueChange
     groupedSignals: IGroupedSignals,
     timestamp: number
   ): ISignal[] {
