@@ -1,9 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { MatSliderModule } from '@angular/material/slider';
-import { TimeService } from '../../services/time.service';
-import { millisecondsToSeconds } from '../../utils/time.util';
-import { BehaviorSubject } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { ControllerSliderService } from '../../services/controller-slider.service';
 
