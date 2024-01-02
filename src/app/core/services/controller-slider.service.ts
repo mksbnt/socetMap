@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { TimeService } from './time.service';
 import { BehaviorSubject } from 'rxjs';
-import { ControllerService } from './controller.service';
+
 import { IndexedDbService } from './indexed-db.service';
 import { DB_KEYS } from '../enums/db-keys.enum';
 import { ControllerActionsService } from './controller-actions.service';
@@ -11,7 +11,7 @@ import { subtractTwelveHoursMilliseconds } from '../utils/time.util';
   providedIn: 'root',
 })
 export class ControllerSliderService {
-  private controllerService: ControllerService = inject(ControllerService);
+  
   private dbService = inject(IndexedDbService);
   private timeService: TimeService = inject(TimeService);
   private actionsService: ControllerActionsService = inject(

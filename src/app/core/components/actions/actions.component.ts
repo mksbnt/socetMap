@@ -10,7 +10,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { ControllerActionsService } from '../../services/controller-actions.service';
 import { WebSocketService } from '../../services/web-socket.service';
 import { IndexedDbService } from '../../services/indexed-db.service';
-import { ControllerService } from '../../services/controller.service';
 import { MatButton, MatButtonModule } from '@angular/material/button';
 import { ISignal } from '../../interfaces/signal.interface';
 import { DB_KEYS } from '../../enums/db-keys.enum';
@@ -52,7 +51,6 @@ export class ActionsComponent implements AfterViewInit {
   );
   private websocketService: WebSocketService = inject(WebSocketService);
   private dbService: IndexedDbService = inject(IndexedDbService);
-  public controllerService: ControllerService = inject(ControllerService);
   private worker: Worker = new Worker(
     new URL('./actions.worker', import.meta.url)
   );
