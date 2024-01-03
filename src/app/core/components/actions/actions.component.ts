@@ -49,7 +49,7 @@ export class ActionsComponent {
     ControllerActionsService
   );
   websocketService: WebSocketService = inject(WebSocketService);
-  private dbService: IndexedDbService = inject(IndexedDbService);
+  dbService: IndexedDbService = inject(IndexedDbService);
   private worker: Worker = new Worker(
     new URL('./actions.worker', import.meta.url)
   );

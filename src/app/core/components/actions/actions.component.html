@@ -1,7 +1,8 @@
 <div class="wrapper">
   <button #playButton mat-mini-fab [ariaLabel]="controllerActionsService.isPlayModeActive ? 'Pause' : 'Play'"
     [color]="controllerActionsService.isPlayModeActive ? 'accent' : 'primary'"
-    [disabled]="controllerActionsService.isLiveModeActive" (click)="playAction()">
+    [disabled]="controllerActionsService.isLiveModeActive || (dbService.recordsCount$ | async) === 0"
+    (click)="playAction()">
     <mat-icon>
       @if ( controllerActionsService.isPlayModeActive) { pause } @else { play_arrow }
     </mat-icon>
