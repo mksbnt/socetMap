@@ -1,7 +1,12 @@
 import { Injectable, inject } from '@angular/core';
 import { INewGroupedSignal, ISignal } from '../interfaces/signal.interface';
 import { NgxIndexedDBService } from 'ngx-indexed-db';
-import { lastValueFrom, tap } from 'rxjs';
+import {
+  BehaviorSubject,
+  distinctUntilChanged,
+  lastValueFrom,
+  tap,
+} from 'rxjs';
 import { DB_KEYS } from '../enums/db-keys.enum';
 import { SignalsService } from './signals.service';
 import {
@@ -16,6 +21,20 @@ import {
 export class IndexedDbService {
   private dbService: NgxIndexedDBService = inject(NgxIndexedDBService);
   private signalsService: SignalsService = inject(SignalsService);
+  recordsCount$: BehaviorSubject<number> = new BehaviorSubject<number>(0);
+
+  constructor() {
+    this.setRecordsCount(DB_KEYS.GROUPED_SIGNALS);
+  }
+
+  setRecordsCount(key: DB_KEYS): void {
+    this.dbService
+      .count(key)
+      .pipe(distinctUntilChanged())
+      .subscribe((count) => {
+        this.recordsCount$.next(count);
+      });
+  }
 
   get(key: DB_KEYS, timeStamp: number) {
     this.dbService
@@ -37,20 +56,14 @@ export class IndexedDbService {
       .add(key, { timestamp, signals })
       .pipe(
         tap(() => this.signalsService.signals$.next(signals)),
-        tap(() => this.deleteOldSignals(DB_KEYS.GROUPED_SIGNALS, timestamp))
+        tap(() => this.deleteOldSignals(DB_KEYS.GROUPED_SIGNALS, timestamp)),
+        tap(() => this.setRecordsCount(DB_KEYS.GROUPED_SIGNALS))
       )
       .subscribe();
   }
 
   async getAllRecords(key: DB_KEYS): Promise<INewGroupedSignal[]> {
     return lastValueFrom(this.dbService.getAll(key));
-  }
-
-  async getRecordsCount(key: DB_KEYS): Promise<number> {
-    const count = await new Promise<number>((resolve) => {
-      this.dbService.count(key).subscribe(resolve);
-    });
-    return count;
   }
 
   private deleteOldSignals(key: DB_KEYS, currentTimestamp: number): void {

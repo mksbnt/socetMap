@@ -1,5 +1,6 @@
-<mat-slider [disabled]="sliderService.isSliderDisabled" [min]="sliderService.minSliderValue$ | async"
-  [max]="sliderService.maxSliderValue$ | async" [step]="SLIDER_STEP">
+<mat-slider
+  [disabled]="actionsService.isLiveModeActive || actionsService.isPlayModeActive || (dbService.recordsCount$ | async) === 0"
+  [min]="sliderService.minSliderValue$ | async" [max]="sliderService.maxSliderValue$ | async" [step]="SLIDER_STEP">
   <input matSliderThumb [(ngModel)]="sliderService.sliderValue"
     (ngModelChange)="sliderService.sliderValueChange($event)" />
 </mat-slider>

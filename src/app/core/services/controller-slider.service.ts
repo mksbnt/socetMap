@@ -45,10 +45,6 @@ export class ControllerSliderService {
         );
       }
     });
-
-    this.dbService
-      .getRecordsCount(DB_KEYS.GROUPED_SIGNALS)
-      .then((res) => (this.signalsCount = res));
   }
 
   sliderTimestamp$: BehaviorSubject<number> = new BehaviorSubject<number>(
@@ -80,12 +76,4 @@ export class ControllerSliderService {
   minSliderValue$: BehaviorSubject<number> = new BehaviorSubject<number>(
     this.minSliderValue
   );
-
-  get isSliderDisabled(): boolean {
-    return (
-      this.actionsService.isLiveModeActive ||
-      this.actionsService.isPlayModeActive ||
-      this.signalsCount === 0
-    );
-  }
 }
