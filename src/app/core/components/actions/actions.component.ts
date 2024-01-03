@@ -5,6 +5,7 @@ import {
   ViewChild,
   DestroyRef,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { ControllerActionsService } from '../../services/controller-actions.service';
@@ -21,7 +22,7 @@ import {
   currentTimestampMilliseconds,
   subtractTwelveHoursMilliseconds,
 } from '../../utils/time.util';
-import { MODE } from '../../enums/mode.enum';
+import { ACTION } from '../../enums/action.enum';
 
 @Component({
   selector: 'app-actions',
@@ -38,18 +39,13 @@ export class ActionsComponent {
   onKeyDown(event: KeyboardEvent) {
     switch (event.code) {
       case 'KeyP':
-        this.playAction();
+        this.handleAction(ACTION.PLAY);
         break;
       case 'KeyL':
-        this.liveAction();
+        this.handleAction(ACTION.LIVE);
         break;
     }
   }
-  public controllerActionsService: ControllerActionsService = inject(
-    ControllerActionsService
-  );
-  websocketService: WebSocketService = inject(WebSocketService);
-  dbService: IndexedDbService = inject(IndexedDbService);
   private worker: Worker = new Worker(
     new URL('./actions.worker', import.meta.url)
   );
@@ -58,33 +54,68 @@ export class ActionsComponent {
   private sliderService: ControllerSliderService = inject(
     ControllerSliderService
   );
+  private changeDetectorRef: ChangeDetectorRef = inject(ChangeDetectorRef);
+  controllerActionsService: ControllerActionsService = inject(
+    ControllerActionsService
+  );
+  websocketService: WebSocketService = inject(WebSocketService);
+  dbService: IndexedDbService = inject(IndexedDbService);
+  ACTION = ACTION;
 
-  playAction(): void {
-    if (this.playButton.disabled) {
+  handleAction(action: ACTION): void {
+    this.runAction(action, this.getButton(action));
+  }
+
+  private getButton = (action: ACTION): MatButton => {
+    switch (action) {
+      case ACTION.PLAY:
+        return this.playButton;
+      case ACTION.LIVE:
+        return this.liveButton;
+    }
+  };
+
+  private runAction(action: ACTION, button: MatButton): void {
+    if (button.disabled) {
       return;
     }
 
-    if (!this.controllerActionsService.isPlayModeActive) {
-      this.controllerActionsService.togglePlayMode();
-      this.runWorker(MODE.PLAY);
-    } else {
-      this.controllerActionsService.togglePlayMode();
-      this.terminateWorker();
+    switch (action) {
+      case ACTION.PLAY:
+        this.controllerActionsService.isPlayModeActive
+          ? this.stopPlayMode()
+          : this.startPlayMode();
+        break;
+      case ACTION.LIVE:
+        this.controllerActionsService.isLiveModeActive
+          ? this.stopLiveMode()
+          : this.startLiveMode();
+        break;
     }
   }
 
-  terminateWorker(): void {
+  private stopPlayMode(): void {
+    this.controllerActionsService.togglePlayMode();
+    this.terminateWorker();
+  }
+
+  private startPlayMode(): void {
+    this.controllerActionsService.togglePlayMode();
+    this.runWorker(ACTION.PLAY);
+  }
+
+  private terminateWorker(): void {
     this.worker.terminate();
   }
 
-  runWorker(mode: MODE): void {
+  private runWorker(action: ACTION): void {
     this.worker = new Worker(new URL('./actions.worker', import.meta.url));
 
     if (typeof Worker !== 'undefined') {
       this.worker.onmessage = ({ data }) => {
         const currentTimestampMilliseconds = Number(data);
 
-        if (mode === MODE.LIVE) {
+        if (action === ACTION.LIVE) {
           this.sliderService.maxSliderValue$.next(currentTimestampMilliseconds);
           this.sliderService.minSliderValue$.next(
             subtractTwelveHoursMilliseconds(currentTimestampMilliseconds)
@@ -96,35 +127,26 @@ export class ActionsComponent {
           ) {
             this.controllerActionsService.togglePlayMode();
             this.terminateWorker();
+            this.changeDetectorRef.markForCheck();
           }
         }
 
         this.sliderService.sliderTimestamp$.next(currentTimestampMilliseconds);
         this.sliderService.sliderValue = currentTimestampMilliseconds;
       };
-      this.worker.postMessage(this.workerPostMessage(mode));
+      this.worker.postMessage(this.workerPostMessage(action));
     } else {
       console.log('Web workers are not supported in this environment');
     }
   }
 
-  workerPostMessage = (mode: MODE): number => {
-    return mode === MODE.PLAY
+  private workerPostMessage = (action: ACTION): number => {
+    return action === ACTION.PLAY
       ? this.sliderService.sliderValue
       : currentTimestampMilliseconds();
   };
 
-  liveAction(): void {
-    this.liveButton.disabled
-      ? () => {
-          return;
-        }
-      : !this.controllerActionsService.isLiveModeActive
-      ? this.startLiveMode()
-      : this.stopLiveMode();
-  }
-
-  startLiveMode(): void {
+  private startLiveMode(): void {
     this.controllerActionsService.toggleLiveMode();
 
     this.websocketService.webSocket
@@ -135,16 +157,16 @@ export class ActionsComponent {
       )
       .subscribe((signals) => this.writeData(DB_KEYS.GROUPED_SIGNALS, signals));
 
-    this.runWorker(MODE.LIVE);
+    this.runWorker(ACTION.LIVE);
   }
 
-  stopLiveMode(): void {
+  private stopLiveMode(): void {
     this.controllerActionsService.toggleLiveMode();
     this.stopListeningWebSocet.next();
     this.terminateWorker();
   }
 
-  writeData(key: DB_KEYS, data: ISignal | ISignal[]): void {
+  private writeData(key: DB_KEYS, data: ISignal | ISignal[]): void {
     this.dbService.write(key, Array.isArray(data) ? data : [data]);
   }
 }

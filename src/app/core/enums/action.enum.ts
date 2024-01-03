@@ -1,4 +1,4 @@
-export enum MODE {
+export enum ACTION {
   PLAY = 'play',
   LIVE = 'live',
 }
