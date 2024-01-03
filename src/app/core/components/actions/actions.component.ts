@@ -4,6 +4,7 @@ import {
   HostListener,
   ViewChild,
   DestroyRef,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { ControllerActionsService } from '../../services/controller-actions.service';
@@ -28,6 +29,7 @@ import { MODE } from '../../enums/mode.enum';
   imports: [MatIconModule, MatButtonModule, CommonModule],
   templateUrl: './actions.component.html',
   styleUrl: './actions.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ActionsComponent {
   @ViewChild('liveButton') liveButton!: MatButton;
