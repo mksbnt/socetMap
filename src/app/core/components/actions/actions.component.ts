@@ -12,17 +12,16 @@ import { ControllerActionsService } from '../../services/controller-actions.serv
 import { WebSocketService } from '../../services/web-socket.service';
 import { IndexedDbService } from '../../services/indexed-db.service';
 import { MatButton, MatButtonModule } from '@angular/material/button';
-import { ISignal } from '../../interfaces/signal.interface';
 import { DB_KEYS } from '../../enums/db-keys.enum';
 import { Subject, takeUntil } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ControllerSliderService } from '../../services/controller-slider.service';
-import {
-  currentTimestampMilliseconds,
-  subtractTwelveHoursMilliseconds,
-} from '../../utils/time.util';
+import { currentTimestampMilliseconds } from '../../utils/time.util';
 import { ACTION } from '../../enums/action.enum';
+import { isPlayAction } from '../../utils/action.util';
+import { isOverLimit } from '../../utils/slider.util';
+import { makeArray } from '../../utils/array.util';
 
 @Component({
   selector: 'app-actions',
@@ -46,9 +45,7 @@ export class ActionsComponent {
         break;
     }
   }
-  private worker: Worker = new Worker(
-    new URL('./actions.worker', import.meta.url)
-  );
+  private worker!: Worker;
   private stopListeningWebSocet: Subject<void> = new Subject<void>();
   private destroyRef: DestroyRef = inject(DestroyRef);
   private sliderService: ControllerSliderService = inject(
@@ -63,35 +60,30 @@ export class ActionsComponent {
   ACTION = ACTION;
 
   handleAction(action: ACTION): void {
-    this.runAction(action, this.getButton(action));
+    this.runAction(action);
   }
 
-  private getButton = (action: ACTION): MatButton => {
-    switch (action) {
-      case ACTION.PLAY:
-        return this.playButton;
-      case ACTION.LIVE:
-        return this.liveButton;
-    }
-  };
+  private runAction(
+    action: ACTION,
+    isActionPlay: boolean = isPlayAction(action)
+  ): void {
+    const button = isActionPlay ? this.playButton : this.liveButton;
 
-  private runAction(action: ACTION, button: MatButton): void {
-    if (button.disabled) {
-      return;
+    if (!button.disabled) {
+      isActionPlay ? this.togglePlayMode() : this.toggleLiveMode();
     }
+  }
 
-    switch (action) {
-      case ACTION.PLAY:
-        this.controllerActionsService.isPlayModeActive
-          ? this.stopPlayMode()
-          : this.startPlayMode();
-        break;
-      case ACTION.LIVE:
-        this.controllerActionsService.isLiveModeActive
-          ? this.stopLiveMode()
-          : this.startLiveMode();
-        break;
-    }
+  private togglePlayMode(): void {
+    this.controllerActionsService.isPlayModeActive
+      ? this.stopPlayMode()
+      : this.startPlayMode();
+  }
+
+  private toggleLiveMode(): void {
+    this.controllerActionsService.isLiveModeActive
+      ? this.stopLiveMode()
+      : this.startLiveMode();
   }
 
   private stopPlayMode(): void {
@@ -108,31 +100,34 @@ export class ActionsComponent {
     this.worker.terminate();
   }
 
-  private runWorker(action: ACTION): void {
+  private workerPlayAction(): void {
+    if (
+      isOverLimit(
+        this.sliderService.sliderValue,
+        this.sliderService.maxSliderValue$.value
+      )
+    ) {
+      this.controllerActionsService.togglePlayMode();
+      this.terminateWorker();
+      this.changeDetectorRef.markForCheck();
+    }
+  }
+
+  private runWorker(
+    action: ACTION,
+    isActionPlay: boolean = isPlayAction(action)
+  ): void {
     this.worker = new Worker(new URL('./actions.worker', import.meta.url));
 
     if (typeof Worker !== 'undefined') {
       this.worker.onmessage = ({ data }) => {
         const currentTimestampMilliseconds = Number(data);
 
-        if (action === ACTION.LIVE) {
-          this.sliderService.maxSliderValue$.next(currentTimestampMilliseconds);
-          this.sliderService.minSliderValue$.next(
-            subtractTwelveHoursMilliseconds(currentTimestampMilliseconds)
-          );
-        } else {
-          if (
-            this.sliderService.sliderValue >=
-            this.sliderService.maxSliderValue$.value
-          ) {
-            this.controllerActionsService.togglePlayMode();
-            this.terminateWorker();
-            this.changeDetectorRef.markForCheck();
-          }
-        }
+        isActionPlay
+          ? this.workerPlayAction()
+          : this.sliderService.updateSliderRange(currentTimestampMilliseconds);
 
-        this.sliderService.sliderTimestamp$.next(currentTimestampMilliseconds);
-        this.sliderService.sliderValue = currentTimestampMilliseconds;
+        this.sliderService.setSliderValue(currentTimestampMilliseconds);
       };
       this.worker.postMessage(this.workerPostMessage(action));
     } else {
@@ -155,7 +150,9 @@ export class ActionsComponent {
         takeUntilDestroyed(this.destroyRef),
         takeUntil(this.stopListeningWebSocet)
       )
-      .subscribe((signals) => this.writeData(DB_KEYS.GROUPED_SIGNALS, signals));
+      .subscribe((signals) =>
+        this.dbService.write(DB_KEYS.GROUPED_SIGNALS, makeArray(signals))
+      );
 
     this.runWorker(ACTION.LIVE);
   }
@@ -164,9 +161,5 @@ export class ActionsComponent {
     this.controllerActionsService.toggleLiveMode();
     this.stopListeningWebSocet.next();
     this.terminateWorker();
-  }
-
-  private writeData(key: DB_KEYS, data: ISignal | ISignal[]): void {
-    this.dbService.write(key, Array.isArray(data) ? data : [data]);
   }
 }

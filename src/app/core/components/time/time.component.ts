@@ -6,8 +6,11 @@ import { ControllerSliderService } from '../../services/controller-slider.servic
   selector: 'app-time',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './time.component.html',
-  styleUrl: './time.component.scss',
+  template: `
+    <time>
+      {{ sliderService.sliderTimestamp$ | async | date : 'M/d/yy, H:mm:ss' }}
+    </time>
+  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TimeComponent {

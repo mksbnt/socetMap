@@ -76,4 +76,9 @@ export class ControllerSliderService {
   minSliderValue$: BehaviorSubject<number> = new BehaviorSubject<number>(
     this.minSliderValue
   );
+
+  updateSliderRange(timestamp: number): void {
+    this.maxSliderValue$.next(timestamp);
+    this.minSliderValue$.next(subtractTwelveHoursMilliseconds(timestamp));
+  }
 }
