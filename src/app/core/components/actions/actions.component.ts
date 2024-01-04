@@ -63,14 +63,36 @@ export class ActionsComponent {
     this.runAction(action);
   }
 
-  private runAction(
-    action: ACTION,
-    isActionPlay: boolean = isPlayAction(action)
-  ): void {
-    const button = isActionPlay ? this.playButton : this.liveButton;
+  private runAction(action: ACTION): void {
+    try {
+      const { button, actionHandler } = this.getActionDetails(action);
 
-    if (!button.disabled) {
-      isActionPlay ? this.togglePlayMode() : this.toggleLiveMode();
+      if (!button.disabled) {
+        actionHandler();
+      }
+    } catch (error) {
+      console.error('Error handling action:', error);
+    }
+  }
+
+  getActionDetails(action: ACTION): {
+    button: MatButton;
+    actionHandler: () => void;
+  } {
+    switch (action) {
+      case ACTION.PLAY:
+        return {
+          button: this.playButton,
+          actionHandler: this.togglePlayMode.bind(this),
+        };
+      case ACTION.LIVE:
+        return {
+          button: this.liveButton,
+          actionHandler: this.toggleLiveMode.bind(this),
+        };
+      // Add cases for more actions as needed
+      default:
+        throw new Error(`Unknown action: ${action}`);
     }
   }
 
