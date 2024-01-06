@@ -1,4 +1,17 @@
 <div class="wrapper">
+  <button #liveButton mat-mini-fab aria-label="Live"
+    [color]="controllerActionsService.isLiveModeActive ? 'accent' : 'primary'"
+    [disabled]="controllerActionsService.isPlayModeActive || !( websocketService.connectionStatus$ | async)"
+    (click)="handleAction(ACTION.LIVE)">
+    <mat-icon>track_changes</mat-icon>
+  </button>
+
+  <button #prevButton mat-mini-fab color="primary" aria-label="Previous"
+    [disabled]="controllerActionsService.isLiveModeActive || !(signalsService.previousSignalsTimestamp$ | async)"
+    (click)="handleAction(ACTION.PREV)">
+    <mat-icon>fast_rewind</mat-icon>
+  </button>
+
   <button #playButton mat-mini-fab [ariaLabel]="controllerActionsService.isPlayModeActive ? 'Pause' : 'Play'"
     [color]="controllerActionsService.isPlayModeActive ? 'accent' : 'primary'"
     [disabled]="controllerActionsService.isLiveModeActive || !(dbService.recordsCount$ | async)"
@@ -8,10 +21,9 @@
     </mat-icon>
   </button>
 
-  <button #liveButton mat-mini-fab aria-label="Live"
-    [color]="controllerActionsService.isLiveModeActive ? 'accent' : 'primary'"
-    [disabled]="controllerActionsService.isPlayModeActive || !( websocketService.connectionStatus$ | async)"
-    (click)="handleAction(ACTION.LIVE)">
-    <mat-icon>track_changes</mat-icon>
+  <button #nextButton mat-mini-fab color="primary" aria-label="Next"
+    [disabled]="controllerActionsService.isLiveModeActive || !(signalsService.nextSignalsTimestamp$ | async)"
+    (click)="handleAction(ACTION.NEXT)">
+    <mat-icon>fast_forward</mat-icon>
   </button>
 </div>

@@ -6,5 +6,7 @@ import { ISignal } from '../interfaces/signal.interface';
   providedIn: 'root',
 })
 export class SignalsService {
-  signals$: BehaviorSubject<ISignal[]> = new BehaviorSubject<ISignal[]>([]);
+  signals$ = new BehaviorSubject<ISignal[]>([]);
+  previousSignalsTimestamp$ = new BehaviorSubject<number | null>(null);
+  nextSignalsTimestamp$ = new BehaviorSubject<number | null>(null);
 }

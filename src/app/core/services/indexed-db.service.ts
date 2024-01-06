@@ -36,15 +36,55 @@ export class IndexedDbService {
       });
   }
 
-  get(key: DB_KEYS, timeStamp: number) {
+  get(key: DB_KEYS, timestamp: number) {
     this.dbService
-      .getByIndex<INewGroupedSignal>(key, 'timestamp', timeStamp)
+      .getByIndex<INewGroupedSignal>(key, 'timestamp', timestamp)
+      .subscribe((response) => this.handleGetResponse(response));
+  }
 
-      .subscribe((res) => {
-        res
-          ? this.signalsService.signals$.next(res.signals)
-          : this.signalsService.signals$.next([]);
-      });
+  private handleGetResponse(response: INewGroupedSignal | undefined): void {
+    response
+      ? this.setSignal(response.signals)
+      : this.signalsService.signals$.next([]);
+  }
+
+  smth() {}
+
+  private setSignal(signals: ISignal[]): void {
+    this.signalsService.signals$.next(signals);
+
+    const currentTimestamp =
+      signals.length > 0 ? signals[0].timestamp : undefined;
+
+    this.getAllRecords(DB_KEYS.GROUPED_SIGNALS).then((allSignals) => {
+      const currentIndex = allSignals.findIndex(
+        (signal) => signal.timestamp === currentTimestamp
+      );
+
+      this.updatePreviousAndNextTimestamps(currentIndex, allSignals);
+    });
+  }
+
+  private updatePreviousAndNextTimestamps(
+    currentIndex: number,
+    allSignals: INewGroupedSignal[]
+  ): void {
+    const setPreviousTimestamp = (index: number): void => {
+      this.signalsService.previousSignalsTimestamp$.next(
+        index !== -1 && index > 0 ? allSignals[index - 1].timestamp : null
+      );
+    };
+
+    const setNextTimestamp = (index: number): void => {
+      this.signalsService.nextSignalsTimestamp$.next(
+        index !== -1 && index < allSignals.length - 1
+          ? allSignals[index + 1].timestamp
+          : null
+      );
+    };
+
+    setPreviousTimestamp(currentIndex);
+    setNextTimestamp(currentIndex);
   }
 
   write(key: DB_KEYS, data: ISignal[]) {
@@ -55,11 +95,21 @@ export class IndexedDbService {
     this.dbService
       .add(key, { timestamp, signals })
       .pipe(
-        tap(() => this.signalsService.signals$.next(signals)),
-        tap(() => this.deleteOldSignals(DB_KEYS.GROUPED_SIGNALS, timestamp)),
-        tap(() => this.setRecordsCount(DB_KEYS.GROUPED_SIGNALS))
+        tap(() =>
+          this.onWriteHandler(timestamp, signals, DB_KEYS.GROUPED_SIGNALS)
+        )
       )
       .subscribe();
+  }
+
+  private onWriteHandler(
+    timestamp: number,
+    signals: ISignal[],
+    dbKey: DB_KEYS
+  ): void {
+    this.deleteOldSignals(dbKey, timestamp);
+    this.signalsService.signals$.next(signals);
+    this.setRecordsCount(dbKey);
   }
 
   async getAllRecords(key: DB_KEYS): Promise<INewGroupedSignal[]> {

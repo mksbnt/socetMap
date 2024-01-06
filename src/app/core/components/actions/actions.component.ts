@@ -17,11 +17,16 @@ import { Subject, takeUntil } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ControllerSliderService } from '../../services/controller-slider.service';
-import { currentTimestampMilliseconds } from '../../utils/time.util';
+import {
+  currentTimestampMilliseconds,
+  secondsToMilliseconds,
+} from '../../utils/time.util';
 import { ACTION } from '../../enums/action.enum';
 import { isPlayAction } from '../../utils/action.util';
 import { isOverLimit } from '../../utils/slider.util';
 import { makeArray } from '../../utils/array.util';
+import { SignalsService } from '../../services/signals.service';
+import { ActionDetails } from '../../interfaces/action.inteface';
 
 @Component({
   selector: 'app-actions',
@@ -34,6 +39,8 @@ import { makeArray } from '../../utils/array.util';
 export class ActionsComponent {
   @ViewChild('liveButton') liveButton!: MatButton;
   @ViewChild('playButton') playButton!: MatButton;
+  @ViewChild('nextButton') nextButton!: MatButton;
+  @ViewChild('prevButton') prevButton!: MatButton;
   @HostListener('window:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
     switch (event.code) {
@@ -52,12 +59,40 @@ export class ActionsComponent {
     ControllerSliderService
   );
   private changeDetectorRef: ChangeDetectorRef = inject(ChangeDetectorRef);
+  signalsService: SignalsService = inject(SignalsService);
   controllerActionsService: ControllerActionsService = inject(
     ControllerActionsService
   );
   websocketService: WebSocketService = inject(WebSocketService);
   dbService: IndexedDbService = inject(IndexedDbService);
   ACTION = ACTION;
+
+  private actionMapping!: Record<ACTION, ActionDetails>;
+
+  ngAfterViewInit(): void {
+    this.initializeActionMapping();
+  }
+
+  initializeActionMapping(): void {
+    this.actionMapping = {
+      [ACTION.PLAY]: {
+        button: this.playButton,
+        actionHandler: this.togglePlayMode.bind(this),
+      },
+      [ACTION.LIVE]: {
+        button: this.liveButton,
+        actionHandler: this.toggleLiveMode.bind(this),
+      },
+      [ACTION.NEXT]: {
+        button: this.nextButton,
+        actionHandler: this.nextSignal.bind(this),
+      },
+      [ACTION.PREV]: {
+        button: this.prevButton,
+        actionHandler: this.prevSignal.bind(this),
+      },
+    };
+  }
 
   handleAction(action: ACTION): void {
     this.runAction(action);
@@ -75,24 +110,31 @@ export class ActionsComponent {
     }
   }
 
-  getActionDetails(action: ACTION): {
-    button: MatButton;
-    actionHandler: () => void;
-  } {
-    switch (action) {
-      case ACTION.PLAY:
-        return {
-          button: this.playButton,
-          actionHandler: this.togglePlayMode.bind(this),
-        };
-      case ACTION.LIVE:
-        return {
-          button: this.liveButton,
-          actionHandler: this.toggleLiveMode.bind(this),
-        };
-      // Add cases for more actions as needed
-      default:
-        throw new Error(`Unknown action: ${action}`);
+  getActionDetails(action: ACTION): ActionDetails {
+    const details = this.actionMapping[action];
+    if (details) {
+      return details;
+    } else {
+      throw new Error(`Unknown action: ${action}`);
+    }
+  }
+
+  private prevSignal(): void {
+    const previousTimestamp =
+      this.signalsService.previousSignalsTimestamp$.getValue();
+
+    if (previousTimestamp) {
+      this.sliderService.setSliderValue(
+        secondsToMilliseconds(previousTimestamp)
+      );
+    }
+  }
+
+  private nextSignal(): void {
+    const netxTimestamp = this.signalsService.nextSignalsTimestamp$.getValue();
+
+    if (netxTimestamp) {
+      this.sliderService.setSliderValue(secondsToMilliseconds(netxTimestamp));
     }
   }
 
