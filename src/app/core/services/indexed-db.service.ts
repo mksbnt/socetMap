@@ -48,8 +48,6 @@ export class IndexedDbService {
       : this.signalsService.signals$.next([]);
   }
 
-  smth() {}
-
   private setSignal(signals: ISignal[]): void {
     this.signalsService.signals$.next(signals);
 
