@@ -7,7 +7,7 @@
   </button>
 
   <button #prevButton mat-mini-fab color="primary" aria-label="Previous"
-    [disabled]="controllerActionsService.isLiveModeActive || !(signalsService.previousSignalsTimestamp$ | async)"
+    [disabled]="controllerActionsService.isLiveModeActive || controllerActionsService.isPlayModeActive || !(signalsService.previousSignalsTimestamp$ | async)"
     (click)="handleAction(ACTION.PREV)">
     <mat-icon>fast_rewind</mat-icon>
   </button>
@@ -22,7 +22,7 @@
   </button>
 
   <button #nextButton mat-mini-fab color="primary" aria-label="Next"
-    [disabled]="controllerActionsService.isLiveModeActive || !(signalsService.nextSignalsTimestamp$ | async)"
+    [disabled]="controllerActionsService.isLiveModeActive || controllerActionsService.isPlayModeActive || !(signalsService.nextSignalsTimestamp$ | async)"
     (click)="handleAction(ACTION.NEXT)">
     <mat-icon>fast_forward</mat-icon>
   </button>
