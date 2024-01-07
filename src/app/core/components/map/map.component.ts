@@ -28,6 +28,7 @@ export default class MapComponent {
   private signalsService: SignalsService = inject(SignalsService);
   private destroyRef: DestroyRef = inject(DestroyRef);
 
+
   onMapReady(map: L.Map) {
     const pointsLayer = layerGroup().addTo(map);
     const zonesLayer = layerGroup().addTo(map);
