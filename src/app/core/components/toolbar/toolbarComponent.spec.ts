@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ControllerComponent } from './controller.component';
+import { ToolbarComponent } from './toolbarComponent';
 
 describe('ControllerComponent', () => {
   let component: ControllerComponent;

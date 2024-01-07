@@ -1,13 +1,13 @@
-import { Component } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatTabsModule } from '@angular/material/tabs';
-import ControllerComponent from '../../components/controller/controller.component';
+import {Component} from '@angular/core';
+import {MatButtonModule} from '@angular/material/button';
+import {MatIconModule} from '@angular/material/icon';
+import {MatToolbarModule} from '@angular/material/toolbar';
+import {MatTabsModule} from '@angular/material/tabs';
+import ToolbarComponent from '../../components/toolbar/toolbarComponent';
 import SettingsComponent from '../../components/settings/settings.component';
 import MapComponent from '../../components/map/map.component';
 import CodeComponent from '../../components/code/code.component';
-import { RouterOutlet } from '@angular/router';
+import {RouterOutlet} from '@angular/router';
 
 @Component({
   selector: 'app-home',
@@ -16,7 +16,7 @@ import { RouterOutlet } from '@angular/router';
       <router-outlet></router-outlet>
     </main>
     <footer>
-      <app-controller></app-controller>
+      <app-toolbar></app-toolbar>
     </footer>
   `,
   styleUrls: ['./home.component.scss'],
@@ -25,7 +25,7 @@ import { RouterOutlet } from '@angular/router';
     MatIconModule,
     MatTabsModule,
     MatButtonModule,
-    ControllerComponent,
+    ToolbarComponent,
     SettingsComponent,
     MapComponent,
     CodeComponent,
@@ -33,4 +33,5 @@ import { RouterOutlet } from '@angular/router';
   ],
   standalone: true,
 })
-export default class HomeComponent {}
+export default class HomeComponent {
+}
