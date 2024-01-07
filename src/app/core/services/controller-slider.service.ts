@@ -34,7 +34,6 @@ export class ControllerSliderService {
   public set sliderTimestamp(value) {
     this._sliderTimestamp = value;
   }
-  public signalsCount: number = 0;
 
   constructor() {
     this.sliderTimestamp$.subscribe((timestamp) => {
