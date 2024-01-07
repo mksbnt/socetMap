@@ -5,28 +5,28 @@ import {
   ViewChild,
   DestroyRef,
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
+  ChangeDetectorRef, AfterViewInit,
 } from '@angular/core';
-import { MatIconModule } from '@angular/material/icon';
-import { ControllerActionsService } from '../../services/controller-actions.service';
-import { WebSocketService } from '../../services/web-socket.service';
-import { IndexedDbService } from '../../services/indexed-db.service';
-import { MatButton, MatButtonModule } from '@angular/material/button';
-import { DB_KEYS } from '../../enums/db-keys.enum';
-import { Subject, takeUntil } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
-import { ControllerSliderService } from '../../services/controller-slider.service';
+import {MatIconModule} from '@angular/material/icon';
+import {ControllerActionsService} from '../../services/controller-actions.service';
+import {WebSocketService} from '../../services/web-socket.service';
+import {IndexedDbService} from '../../services/indexed-db.service';
+import {MatButton, MatButtonModule} from '@angular/material/button';
+import {DB_KEYS} from '../../enums/db-keys.enum';
+import {Subject, takeUntil} from 'rxjs';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {CommonModule} from '@angular/common';
+import {ControllerSliderService} from '../../services/controller-slider.service';
 import {
   currentTimestampMilliseconds,
   secondsToMilliseconds,
 } from '../../utils/time.util';
-import { ACTION } from '../../enums/action.enum';
-import { isPlayAction } from '../../utils/action.util';
-import { isOverLimit } from '../../utils/slider.util';
-import { makeArray } from '../../utils/array.util';
-import { SignalsService } from '../../services/signals.service';
-import { ActionDetails } from '../../interfaces/action.inteface';
+import {ACTION} from '../../enums/action.enum';
+import {isPlayAction} from '../../utils/action.util';
+import {isOverLimit} from '../../utils/slider.util';
+import {makeArray} from '../../utils/array.util';
+import {SignalsService} from '../../services/signals.service';
+import {ActionDetails} from '../../interfaces/action.inteface';
 
 @Component({
   selector: 'app-actions',
@@ -36,11 +36,27 @@ import { ActionDetails } from '../../interfaces/action.inteface';
   styleUrl: './actions.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ActionsComponent {
+export class ActionsComponent implements AfterViewInit {
   @ViewChild('liveButton') liveButton!: MatButton;
   @ViewChild('playButton') playButton!: MatButton;
   @ViewChild('nextButton') nextButton!: MatButton;
   @ViewChild('prevButton') prevButton!: MatButton;
+  signalsService: SignalsService = inject(SignalsService);
+  controllerActionsService: ControllerActionsService = inject(
+    ControllerActionsService
+  );
+  websocketService: WebSocketService = inject(WebSocketService);
+  dbService: IndexedDbService = inject(IndexedDbService);
+  ACTION = ACTION;
+  private worker!: Worker;
+  private stopListeningWebSocket: Subject<void> = new Subject<void>();
+  private destroyRef: DestroyRef = inject(DestroyRef);
+  private sliderService: ControllerSliderService = inject(
+    ControllerSliderService
+  );
+  private changeDetectorRef: ChangeDetectorRef = inject(ChangeDetectorRef);
+  private actionMapping!: Record<ACTION, ActionDetails>;
+
   @HostListener('window:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
     switch (event.code) {
@@ -52,22 +68,6 @@ export class ActionsComponent {
         break;
     }
   }
-  private worker!: Worker;
-  private stopListeningWebSocet: Subject<void> = new Subject<void>();
-  private destroyRef: DestroyRef = inject(DestroyRef);
-  private sliderService: ControllerSliderService = inject(
-    ControllerSliderService
-  );
-  private changeDetectorRef: ChangeDetectorRef = inject(ChangeDetectorRef);
-  signalsService: SignalsService = inject(SignalsService);
-  controllerActionsService: ControllerActionsService = inject(
-    ControllerActionsService
-  );
-  websocketService: WebSocketService = inject(WebSocketService);
-  dbService: IndexedDbService = inject(IndexedDbService);
-  ACTION = ACTION;
-
-  private actionMapping!: Record<ACTION, ActionDetails>;
 
   ngAfterViewInit(): void {
     this.initializeActionMapping();
@@ -98,24 +98,24 @@ export class ActionsComponent {
     this.runAction(action);
   }
 
-  private runAction(action: ACTION): void {
-    try {
-      const { button, actionHandler } = this.getActionDetails(action);
-
-      if (!button.disabled) {
-        actionHandler();
-      }
-    } catch (error) {
-      console.error('Error handling action:', error);
-    }
-  }
-
   getActionDetails(action: ACTION): ActionDetails {
     const details = this.actionMapping[action];
     if (details) {
       return details;
     } else {
       throw new Error(`Unknown action: ${action}`);
+    }
+  }
+
+  private runAction(action: ACTION): void {
+    try {
+      const {button, actionHandler} = this.getActionDetails(action);
+
+      if (!button.disabled) {
+        actionHandler();
+      }
+    } catch (error) {
+      console.error('Error handling action:', error);
     }
   }
 
@@ -131,10 +131,10 @@ export class ActionsComponent {
   }
 
   private nextSignal(): void {
-    const netxTimestamp = this.signalsService.nextSignalsTimestamp$.getValue();
+    const nextTimestamp = this.signalsService.nextSignalsTimestamp$.getValue();
 
-    if (netxTimestamp) {
-      this.sliderService.setSliderValue(secondsToMilliseconds(netxTimestamp));
+    if (nextTimestamp) {
+      this.sliderService.setSliderValue(secondsToMilliseconds(nextTimestamp));
     }
   }
 
@@ -184,7 +184,7 @@ export class ActionsComponent {
     this.worker = new Worker(new URL('./actions.worker', import.meta.url));
 
     if (typeof Worker !== 'undefined') {
-      this.worker.onmessage = ({ data }) => {
+      this.worker.onmessage = ({data}) => {
         const currentTimestampMilliseconds = Number(data);
 
         isActionPlay
@@ -212,7 +212,7 @@ export class ActionsComponent {
       .asObservable()
       .pipe(
         takeUntilDestroyed(this.destroyRef),
-        takeUntil(this.stopListeningWebSocet)
+        takeUntil(this.stopListeningWebSocket)
       )
       .subscribe((signals) =>
         this.dbService.write(DB_KEYS.GROUPED_SIGNALS, makeArray(signals))
@@ -223,7 +223,7 @@ export class ActionsComponent {
 
   private stopLiveMode(): void {
     this.controllerActionsService.toggleLiveMode();
-    this.stopListeningWebSocet.next();
+    this.stopListeningWebSocket.next();
     this.terminateWorker();
   }
 }
