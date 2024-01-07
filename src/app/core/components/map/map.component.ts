@@ -1,6 +1,6 @@
 import {Component, DestroyRef, ViewEncapsulation, inject} from '@angular/core';
 import {LeafletModule} from '@asymmetrik/ngx-leaflet';
-import {LatLngTuple, Marker, layerGroup, polygon, TileLayer} from 'leaflet';
+import {LatLngTuple, Marker, layerGroup, polygon, TileLayer, Layer} from 'leaflet';
 import {MatIconModule} from '@angular/material/icon';
 import {Subject} from 'rxjs';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
@@ -19,7 +19,7 @@ import {SignalsService} from '../../services/signals.service';
       leaflet
       style="height: 100%"
       [leafletOptions]="leafletOptions"
-      (leafletMapReady)="onMapReady($event)"
+      (leafletMapReady)="initializeMap($event)"
     ></div>
   `,
 })
@@ -28,16 +28,25 @@ export default class MapComponent {
   private signalsService: SignalsService = inject(SignalsService);
   private destroyRef: DestroyRef = inject(DestroyRef);
 
-
-  onMapReady(map: L.Map) {
-    const pointsLayer = layerGroup().addTo(map);
-    const zonesLayer = layerGroup().addTo(map);
-    const pointsStream$ = new Subject<LatLngTuple[]>();
-    const zonesStream$ = new Subject<LatLngTuple[][]>();
+  initializeMap(map: L.Map) {
+    const {
+      pointsLayer,
+      zonesLayer,
+      pointsStream$,
+      zonesStream$
+    } = this.createLayers(map);
 
     this.subscribeToPointsChanges(pointsStream$, pointsLayer);
     this.subscribeToZonesChanges(zonesStream$, zonesLayer);
     this.observeAndProcessSignals(map, pointsStream$, zonesStream$);
+  }
+
+  private createLayers(map: L.Map) {
+    const pointsLayer = layerGroup().addTo(map);
+    const zonesLayer = layerGroup().addTo(map);
+    const pointsStream$ = new Subject<LatLngTuple[]>();
+    const zonesStream$ = new Subject<LatLngTuple[][]>();
+    return {pointsLayer, zonesLayer, pointsStream$, zonesStream$};
   }
 
   private subscribeToPointsChanges(
@@ -51,32 +60,23 @@ export default class MapComponent {
       });
   }
 
-  private updatePointsLayer(points: LatLngTuple[], pointsLayer: L.LayerGroup) {
+  private updatePointsLayer(points: LatLngTuple[], pointsLayer: L.LayerGroup): void {
+    this.removeExtraMarkers(points, pointsLayer);
+    this.insertMarkers(points, pointsLayer);
+  }
 
-
-    points.forEach((pointCoordinates) => {
-      const existingMarker = pointsLayer
-        .getLayers()
-        .find(
-          (layer) =>
-            layer instanceof Marker &&
-            (layer as Marker).getLatLng().equals(pointCoordinates)
-        );
-      if (existingMarker) {
-        // Update existing marker position
-        (existingMarker as Marker).setLatLng(pointCoordinates);
-      } else {
-        // Create and add new marker
-        new Marker(pointCoordinates, {icon: pointIcon}).addTo(
-          pointsLayer
-        );
-      }
+  private insertMarkers(points: LatLngTuple[], pointsLayer: L.LayerGroup): void {
+    points.forEach((pointCoordinates: LatLngTuple): void => {
+      const existingMarker = this.findExistingMarker(pointCoordinates, pointsLayer);
+      existingMarker ? existingMarker.setLatLng(pointCoordinates) : this.createNewMarker(pointCoordinates, pointsLayer);
     });
-    // Remove any extra markers if the new data has fewer points
-    pointsLayer.eachLayer((layer) => {
+  }
+
+  private removeExtraMarkers(points: LatLngTuple[], pointsLayer: L.LayerGroup): void {
+    pointsLayer.eachLayer((layer: Layer): void => {
       if (layer instanceof Marker) {
         const existingMarker = layer as Marker;
-        const isMarkerPresent = points.some((pointCoordinates) =>
+        const isMarkerPresent = points.some((pointCoordinates: LatLngTuple) =>
           existingMarker.getLatLng().equals(pointCoordinates)
         );
         if (!isMarkerPresent) {
@@ -84,6 +84,20 @@ export default class MapComponent {
         }
       }
     });
+  }
+
+  private findExistingMarker(pointCoordinates: LatLngTuple, pointsLayer: L.LayerGroup): Marker | undefined {
+    return pointsLayer
+      .getLayers()
+      .find(
+        (layer) =>
+          layer instanceof Marker &&
+          (layer as Marker).getLatLng().equals(pointCoordinates)
+      ) as Marker;
+  }
+
+  private createNewMarker(pointCoordinates: LatLngTuple, pointsLayer: L.LayerGroup): void {
+    new Marker(pointCoordinates, {icon: pointIcon}).addTo(pointsLayer);
   }
 
   private subscribeToZonesChanges(
@@ -99,25 +113,23 @@ export default class MapComponent {
 
   private updateZonesLayer(zones: LatLngTuple[][], zonesLayer: L.LayerGroup) {
     const existingPolygons = zonesLayer.getLayers() as L.Polygon[];
-    // Remove polygons that are not present in the new zones
-    existingPolygons.forEach((existingPolygon) => {
-      const matchingZone = zones.find((zone) =>
-        deepArrayEquals(existingPolygon.getLatLngs(), zone)
-      );
+    this.removeExtraPolygons(existingPolygons, zones, zonesLayer);
+    this.updatePolygons(existingPolygons, zones, zonesLayer);
+  }
+
+  private removeExtraPolygons(existingPolygons: L.Polygon[], zones: LatLngTuple[][], zonesLayer: L.LayerGroup) {
+    existingPolygons.forEach(existingPolygon => {
+      const matchingZone = zones.find(zone => deepArrayEquals(existingPolygon.getLatLngs(), zone));
       if (!matchingZone) {
         zonesLayer.removeLayer(existingPolygon);
       }
     });
-    // Add or update polygons based on the new zones
-    zones.forEach((zone: LatLngTuple[]) => {
-      const existingPolygon = existingPolygons.find((polygon) =>
-        deepArrayEquals(polygon.getLatLngs(), zone)
-      );
-      if (existingPolygon) {
-        existingPolygon.setLatLngs(zone);
-      } else {
-        polygon(zone, polygonOptions).addTo(zonesLayer);
-      }
+  }
+
+  private updatePolygons(existingPolygons: L.Polygon[], zones: LatLngTuple[][], zonesLayer: L.LayerGroup) {
+    zones.forEach(zone => {
+      const existingPolygon = existingPolygons.find(polygon => deepArrayEquals(polygon.getLatLngs(), zone));
+      existingPolygon ? existingPolygon.setLatLngs(zone) : polygon(zone, polygonOptions).addTo(zonesLayer);
     });
   }
 
