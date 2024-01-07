@@ -1,6 +1,6 @@
-import { divIcon, tileLayer } from 'leaflet';
+import {divIcon, TileLayer, tileLayer} from 'leaflet';
 
-export const leafletOptions = {
+export const leafletOptions: { layers: TileLayer[] } = {
   layers: [
     tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution:
