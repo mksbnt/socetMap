@@ -1,15 +1,8 @@
-import {
-  Component,
-  DestroyRef,
-  OnInit,
-  ViewChild,
-  inject,
-} from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { MatAccordion, MatExpansionModule } from '@angular/material/expansion';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatIconModule } from '@angular/material/icon';
-import { SignalsService } from '../../services/signals.service';
+import {Component, ViewChild, inject} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {MatAccordion, MatExpansionModule} from '@angular/material/expansion';
+import {MatIconModule} from '@angular/material/icon';
+import {SignalsService} from '../../services/signals.service';
 
 @Component({
   selector: 'app-code',
