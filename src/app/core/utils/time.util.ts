@@ -1,6 +1,5 @@
 export const millisecondsToSeconds = (millis: number): number => {
-  const seconds = Math.floor(millis / 1000);
-  return seconds;
+  return Math.floor(millis / 1000);
 };
 
 export const secondsToMilliseconds = (seconds: number): number =>
