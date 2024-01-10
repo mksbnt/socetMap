@@ -1,12 +1,13 @@
-import { NgModule, isDevMode } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-import { AppRoutingModule } from './app-routing.module';
-import { AppComponent } from './app.component';
-import { ServiceWorkerModule } from '@angular/service-worker';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { DBConfig, NgxIndexedDBModule } from 'ngx-indexed-db';
-import { LeafletModule } from '@asymmetrik/ngx-leaflet';
-import { DB_KEYS } from './core/enums/db-keys.enum';
+import {NgModule, isDevMode} from '@angular/core';
+import {BrowserModule} from '@angular/platform-browser';
+import {AppRoutingModule} from './app-routing.module';
+import {AppComponent} from './app.component';
+import {ServiceWorkerModule} from '@angular/service-worker';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import {DBConfig, NgxIndexedDBModule} from 'ngx-indexed-db';
+import {LeafletModule} from '@asymmetrik/ngx-leaflet';
+import {DB_KEYS} from './core/enums/db-keys.enum';
+import {WINDOW, windowProvider} from "./core/providers/window.provider";
 
 const dbConfig: DBConfig = {
   name: DB_KEYS.GROUPED_SIGNALS,
@@ -14,10 +15,10 @@ const dbConfig: DBConfig = {
   objectStoresMeta: [
     {
       store: DB_KEYS.GROUPED_SIGNALS,
-      storeConfig: { keyPath: 'id', autoIncrement: true },
+      storeConfig: {keyPath: 'id', autoIncrement: true},
       storeSchema: [
-        { name: 'timestamp', keypath: 'timestamp', options: { unique: false } },
-        { name: 'signals', keypath: 'signals', options: { unique: false } },
+        {name: 'timestamp', keypath: 'timestamp', options: {unique: false}},
+        {name: 'signals', keypath: 'signals', options: {unique: false}},
       ],
     },
   ],
@@ -36,6 +37,10 @@ const dbConfig: DBConfig = {
     NgxIndexedDBModule.forRoot(dbConfig),
     LeafletModule,
   ],
+  providers: [
+    {provide: WINDOW, useFactory: windowProvider}
+  ],
   bootstrap: [AppComponent],
 })
-export class AppModule {}
+export class AppModule {
+}
